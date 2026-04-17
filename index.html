@@ -537,7 +537,9 @@ let currentFilter = "Tutti";
 let currentItem = null;
 let clState = {};
 let clMeta = {};
-let items = [
+
+const inventories = {
+  "Furgone 1": [
   {id:1,name:"Instrumento cassa nera e blu",brand:"-",qty:1,pos:"-",cat:"Altro"},
   {id:2,name:"Multi utensile",brand:"Milwaukee",qty:1,pos:"-",cat:"Altro"},
   {id:3,name:"Quadretto portatile",brand:"-",qty:1,pos:"-",cat:"Altro"},
@@ -603,7 +605,11 @@ let items = [
   {id:63,name:"Set di chiave a bussola",brand:"-",qty:1,pos:"Borsa verde / nera Makita",cat:"Utensili Manuali"},
   {id:64,name:"Tenaglia",brand:"-",qty:2,pos:"Borsa verde / nera Makita",cat:"Utensili Manuali"},
   {id:65,name:"Tira trave",brand:"-",qty:2,pos:"-",cat:"Utensili Manuali"},
-];
+],
+  "Magazzino": []
+};
+
+let items = inventories["Furgone 1"];
 let logs = [];
 let checklists = [];
 let nextId = 66;
@@ -674,6 +680,7 @@ function canEdit() {
 function openInventory(name, icon, count) {
   currentInv = name;
   currentFilter = 'Tutti';
+  items = inventories[name] || [];
   document.getElementById('inv-title').textContent = name;
   document.getElementById('inv-add-btn').style.display = canEdit() ? 'block' : 'none';
   document.getElementById('search-input').value = '';
@@ -839,6 +846,7 @@ function submitItem() {
   }
   const newItem = { id: nextId++, name, brand, qty, pos, cat };
   items.push(newItem);
+  inventories[currentInv] = items;
   addLog('add', name, `Qtà: ${qty}, Categoria: ${cat}`);
   closeModal('modal-add');
   showToast('Attrezzo aggiunto!');
