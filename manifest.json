@@ -1,0 +1,14 @@
+{
+  "name": "Inventario XS Carpentieri",
+  "short_name": "Inventario XS",
+  "description": "Gestione inventario attrezzi XS Carpentieri",
+  "start_url": "/inventario-xs/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

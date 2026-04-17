@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Inventario XS Carpentieri</title>
+<meta name="description" content="Gestione inventario attrezzi XS Carpentieri"/>
+<meta name="theme-color" content="#111827"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Inventario XS"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="apple-touch-icon" href="icons/icon-192.png"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #f5f4f0;
+  --surface: #ffffff;
+  --dark: #111827;
+  --dark2: #1f2937;
+  --accent: #d97706;
+  --accent2: #f59e0b;
+  --green: #16a34a;
+  --red: #dc2626;
+  --amber: #d97706;
+  --border: rgba(0,0,0,0.08);
+  --text: #111827;
+  --text2: #6b7280;
+  --text3: #9ca3af;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.5; }
+
+/* APP SHELL */
+#app { height: 100vh; display: flex; flex-direction: column; max-width: 480px; margin: 0 auto; position: relative; overflow: hidden; background: var(--bg); }
+
+/* SCREENS */
+.screen { display: none; flex-direction: column; height: 100%; overflow: hidden; }
+.screen.active { display: flex; }
+
+/* TOPBAR */
+.topbar { background: var(--dark); color: white; padding: 16px 20px 20px; flex-shrink: 0; }
+.topbar-row { display: flex; align-items: center; gap: 12px; }
+.back-btn { background: rgba(255,255,255,0.1); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; flex-shrink: 0; }
+.topbar h1 { font-size: 18px; font-weight: 600; flex: 1; }
+.topbar p { font-size: 13px; opacity: 0.6; margin-top: 2px; }
+.topbar-action { background: rgba(255,255,255,0.12); border: none; color: white; padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; cursor: pointer; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+
+/* SCROLLABLE BODY */
+.screen-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; }
+.screen-body::-webkit-scrollbar { display: none; }
+
+/* BOTTOM NAV */
+.bottom-nav { display: flex; background: var(--surface); border-top: 1px solid var(--border); padding-bottom: env(safe-area-inset-bottom); flex-shrink: 0; }
+.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 10px 4px; background: none; border: none; cursor: pointer; color: var(--text3); font-size: 10px; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: color 0.15s; }
+.nav-btn.active { color: var(--dark); }
+.nav-btn svg { width: 22px; height: 22px; }
+
+/* CARDS */
+.card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); }
+.card + .card { margin-top: 10px; }
+
+/* SECTION LABEL */
+.section-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin: 20px 0 10px; }
+.section-label:first-child { margin-top: 0; }
+
+/* LOGIN SCREEN */
+#screen-login { background: var(--dark); justify-content: center; align-items: center; }
+.login-inner { width: 100%; max-width: 340px; padding: 32px 24px; }
+.login-logo { width: 72px; height: 72px; background: var(--accent); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 28px; }
+.login-logo svg { width: 36px; height: 36px; color: white; }
+.login-title { text-align: center; color: white; font-size: 22px; font-weight: 600; margin-bottom: 4px; }
+.login-sub { text-align: center; color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 32px; }
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.field label { font-size: 13px; color: rgba(255,255,255,0.6); font-weight: 500; }
+.field input { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: var(--radius-sm); padding: 12px 14px; color: white; font-size: 16px; font-family: 'DM Sans', sans-serif; outline: none; transition: border-color 0.15s; }
+.field input:focus { border-color: var(--accent); }
+.field input::placeholder { color: rgba(255,255,255,0.3); }
+.btn-login { width: 100%; background: var(--accent); color: white; border: none; border-radius: var(--radius-sm); padding: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 8px; font-family: 'DM Sans', sans-serif; transition: background 0.15s; }
+.btn-login:active { background: #b45309; }
+.login-demo { text-align: center; color: rgba(255,255,255,0.3); font-size: 12px; margin-top: 20px; line-height: 1.6; }
+.login-error { background: rgba(220,38,38,0.15); border: 1px solid rgba(220,38,38,0.3); border-radius: var(--radius-sm); padding: 10px 14px; color: #fca5a5; font-size: 13px; margin-bottom: 14px; display: none; }
+
+/* HOME */
+.user-card { background: var(--dark); border-radius: var(--radius); padding: 16px; display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+.user-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 15px; color: white; flex-shrink: 0; }
+.user-info { flex: 1; }
+.user-name { color: white; font-weight: 600; font-size: 15px; }
+.user-role { color: rgba(255,255,255,0.5); font-size: 13px; }
+.role-badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.role-badge.admin { background: rgba(217,119,6,0.2); color: var(--accent2); }
+.role-badge.editor { background: rgba(22,163,74,0.2); color: #4ade80; }
+.role-badge.viewer { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+.logout-btn { background: rgba(255,255,255,0.08); border: none; color: rgba(255,255,255,0.6); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+.inv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.inv-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; }
+.inv-card:active { box-shadow: var(--shadow-md); }
+.inv-card-icon { font-size: 26px; margin-bottom: 10px; }
+.inv-card-name { font-weight: 600; font-size: 14px; color: var(--text); }
+.inv-card-count { font-size: 12px; color: var(--text3); margin-top: 3px; }
+.inv-card-add { border: 1.5px dashed var(--border); background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--text3); min-height: 100px; }
+.inv-card-add.locked { cursor: not-allowed; opacity: 0.5; }
+.inv-card-add svg { width: 20px; height: 20px; }
+.inv-card-add span { font-size: 12px; font-weight: 500; }
+
+.action-list { display: flex; flex-direction: column; gap: 8px; }
+.action-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; display: flex; align-items: center; gap: 14px; cursor: pointer; }
+.action-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.action-icon.green { background: #dcfce7; }
+.action-icon.blue { background: #dbeafe; }
+.action-info { flex: 1; }
+.action-title { font-weight: 600; font-size: 14px; }
+.action-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.action-arrow { color: var(--text3); font-size: 18px; }
+
+/* INVENTORY LIST */
+.search-wrap { padding: 12px 20px; background: var(--dark); }
+.search-box { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.1); border-radius: 10px; padding: 10px 14px; }
+.search-box input { background: none; border: none; color: white; font-size: 15px; flex: 1; outline: none; font-family: 'DM Sans', sans-serif; }
+.search-box input::placeholder { color: rgba(255,255,255,0.4); }
+.search-box svg { color: rgba(255,255,255,0.4); width: 18px; height: 18px; flex-shrink: 0; }
+
+.filter-row { display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; scrollbar-width: none; flex-shrink: 0; background: var(--surface); border-bottom: 1px solid var(--border); }
+.filter-row::-webkit-scrollbar { display: none; }
+.filter-chip { white-space: nowrap; font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.filter-chip.active { background: var(--dark); color: white; border-color: var(--dark); }
+
+.item-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.item-list::-webkit-scrollbar { display: none; }
+.item-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--surface); border-bottom: 1px solid var(--border); cursor: pointer; }
+.item-row:active { background: var(--bg); }
+.item-num { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; width: 22px; text-align: right; flex-shrink: 0; }
+.item-body { flex: 1; min-width: 0; }
+.item-name { font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item-meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.item-qty { font-size: 18px; font-weight: 600; color: var(--text); min-width: 28px; text-align: center; font-family: 'DM Mono', monospace; }
+.item-arrow { color: var(--text3); font-size: 14px; flex-shrink: 0; }
+.empty-state { text-align: center; padding: 48px 24px; color: var(--text3); }
+.empty-state svg { width: 40px; height: 40px; margin: 0 auto 12px; }
+.empty-state p { font-size: 14px; }
+
+/* DETAIL */
+.detail-topbar { background: var(--dark); color: white; padding: 14px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.detail-topbar h2 { flex: 1; font-size: 16px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.delete-btn { background: rgba(220,38,38,0.15); border: none; color: #fca5a5; border-radius: var(--radius-sm); padding: 7px 12px; font-size: 12px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; flex-shrink: 0; }
+
+.detail-body { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; }
+.detail-body::-webkit-scrollbar { display: none; }
+.field-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 14px; }
+.field-row { padding: 12px 14px; display: flex; align-items: center; border-bottom: 1px solid var(--border); }
+.field-row:last-child { border-bottom: none; }
+.field-row-label { font-size: 12px; color: var(--text3); font-weight: 500; width: 100px; flex-shrink: 0; }
+.field-row-value { font-size: 14px; color: var(--text); flex: 1; }
+
+.qty-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+.qty-label { font-size: 12px; color: var(--text3); font-weight: 500; }
+.qty-controls { display: flex; align-items: center; gap: 16px; margin-left: auto; }
+.qty-btn { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--border); background: var(--bg); font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text); }
+.qty-val { font-size: 28px; font-weight: 600; color: var(--text); min-width: 40px; text-align: center; font-family: 'DM Mono', monospace; }
+
+.sync-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text3); justify-content: center; margin-bottom: 14px; }
+.sync-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+
+.detail-footer { padding: 12px 16px; border-top: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; gap: 8px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+.btn-save { background: var(--dark); color: white; border: none; border-radius: var(--radius-sm); padding: 13px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: background 0.15s; }
+.btn-save.saving { background: var(--text3); }
+.btn-save.saved { background: var(--green); }
+.btn-back-list { background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; font-size: 14px; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; }
+
+/* CHECKLIST */
+.cl-meta-bar { background: var(--dark); padding: 10px 20px 14px; flex-shrink: 0; }
+.cl-meta-text { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 10px; }
+.cl-progress-track { height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; }
+.cl-progress-fill { height: 100%; background: var(--accent2); border-radius: 2px; transition: width 0.3s; }
+
+.cl-list { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.cl-list::-webkit-scrollbar { display: none; }
+.cl-item { background: var(--surface); border-bottom: 1px solid var(--border); }
+.cl-item-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; cursor: pointer; }
+.cl-check { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.cl-check.ok { background: var(--green); border-color: var(--green); }
+.cl-check.missing { background: var(--red); border-color: var(--red); }
+.cl-check svg { width: 14px; height: 14px; color: white; }
+.cl-item-name { flex: 1; font-size: 14px; font-weight: 500; }
+.cl-item-qty { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; }
+.cl-comment-wrap { padding: 0 16px 14px 54px; }
+.cl-comment-label { font-size: 11px; color: var(--red); font-weight: 600; margin-bottom: 6px; }
+.cl-comment-wrap textarea { width: 100%; font-size: 13px; padding: 10px 12px; border: 1.5px solid var(--red); border-radius: var(--radius-sm); background: #fef2f2; color: var(--text); resize: none; height: 64px; outline: none; font-family: 'DM Sans', sans-serif; }
+
+.cl-footer { background: var(--surface); border-top: 1px solid var(--border); padding: 12px 16px; flex-shrink: 0; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+.cl-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.cl-stat { text-align: center; padding: 10px 8px; border-radius: var(--radius-sm); }
+.cl-stat.ok { background: #dcfce7; }
+.cl-stat.missing { background: #fee2e2; }
+.cl-stat.pending { background: var(--bg); }
+.cl-stat-num { font-size: 20px; font-weight: 700; font-family: 'DM Mono', monospace; }
+.cl-stat.ok .cl-stat-num { color: var(--green); }
+.cl-stat.missing .cl-stat-num { color: var(--red); }
+.cl-stat.pending .cl-stat-num { color: var(--text3); }
+.cl-stat-label { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.btn-cl-save { width: 100%; background: var(--dark); color: white; border: none; border-radius: var(--radius-sm); padding: 13px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+.btn-cl-pause { width: 100%; background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px; font-size: 14px; color: var(--text2); cursor: pointer; font-family: 'DM Sans', sans-serif; margin-bottom: 8px; }
+
+/* LOG */
+.log-item { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; gap: 12px; align-items: flex-start; }
+.log-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 14px; }
+.log-icon.add { background: #dcfce7; }
+.log-icon.edit { background: #dbeafe; }
+.log-icon.del { background: #fee2e2; }
+.log-icon.cl { background: #fef3c7; }
+.log-body { flex: 1; }
+.log-action { font-size: 13px; font-weight: 500; }
+.log-detail { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.log-time { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; text-align: right; flex-shrink: 0; }
+
+/* HISTORY */
+.hist-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; }
+.hist-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+.hist-date { font-weight: 600; font-size: 14px; }
+.hist-inv { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.hist-badge { font-size: 11px; padding: 3px 8px; border-radius: 20px; font-weight: 600; }
+.hist-badge.done { background: #dcfce7; color: var(--green); }
+.hist-badge.progress { background: #fef3c7; color: var(--amber); }
+.hist-stats { display: flex; gap: 12px; }
+.hist-stat { font-size: 12px; color: var(--text3); }
+.hist-stat strong { color: var(--text); font-weight: 600; }
+
+/* MODAL / FORM */
+.modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: none; align-items: flex-end; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--surface); border-radius: var(--radius) var(--radius) 0 0; width: 100%; max-height: 90vh; overflow-y: auto; padding-bottom: env(safe-area-inset-bottom); }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+.modal-title { font-size: 17px; font-weight: 600; }
+.modal-close { background: var(--bg); border: none; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text3); }
+.modal-body { padding: 20px; }
+.form-field { margin-bottom: 16px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; display: block; }
+.form-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 11px 14px; font-size: 15px; color: var(--text); font-family: 'DM Sans', sans-serif; outline: none; }
+.form-input:focus { border-color: var(--dark); }
+.form-select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 11px 14px; font-size: 15px; color: var(--text); font-family: 'DM Sans', sans-serif; outline: none; appearance: none; }
+.autocomplete-list { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); margin-top: 4px; overflow: hidden; display: none; }
+.autocomplete-list.open { display: block; }
+.autocomplete-item { padding: 10px 14px; font-size: 14px; cursor: pointer; border-bottom: 1px solid var(--border); }
+.autocomplete-item:last-child { border-bottom: none; }
+.autocomplete-item:hover { background: var(--bg); }
+.btn-submit { width: 100%; background: var(--dark); color: white; border: none; border-radius: var(--radius-sm); padding: 13px; font-size: 15px; font-weight: 600; cursor: pointer; font-family: 'DM Sans', sans-serif; margin-top: 4px; }
+
+/* CHECKLIST START MODAL */
+.cl-start-field { margin-bottom: 14px; }
+
+/* TOAST */
+.toast { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: var(--dark); color: white; padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 500; white-space: nowrap; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 200; }
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- LOGIN -->
+<div class="screen active" id="screen-login">
+  <div class="login-inner">
+    <div class="login-logo">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+    </div>
+    <div class="login-title">XS Carpentieri</div>
+    <div class="login-sub">Gestione Inventario</div>
+    <div class="login-error" id="login-error">Utente o PIN non validi</div>
+    <div class="field"><label>Utente</label><input type="text" id="login-user" placeholder="es. marco" autocomplete="off"/></div>
+    <div class="field"><label>PIN</label><input type="password" id="login-pin" placeholder="••••" maxlength="8"/></div>
+    <button class="btn-login" onclick="doLogin()">Accedi</button>
+    <div class="login-demo">Demo: admin/1234 · luca/5678 · anna/9999</div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div class="screen" id="screen-home">
+  <div class="screen-body">
+    <div class="user-card">
+      <div class="user-avatar" id="home-avatar">A</div>
+      <div class="user-info">
+        <div class="user-name" id="home-name">Admin</div>
+        <div class="user-role" id="home-role">Amministratore</div>
+      </div>
+      <span class="role-badge admin" id="home-badge">Admin</span>
+      <button class="logout-btn" onclick="doLogout()" style="margin-left:8px;">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      </button>
+    </div>
+
+    <div class="section-label">Inventari</div>
+    <div class="inv-grid" id="inv-grid">
+      <div class="inv-card" onclick="openInventory('Furgone 1','🚐',65)">
+        <div class="inv-card-icon">🚐</div>
+        <div class="inv-card-name">Furgone 1</div>
+        <div class="inv-card-count">65 attrezzi</div>
+      </div>
+      <div class="inv-card" onclick="openInventory('Magazzino','🏭',0)">
+        <div class="inv-card-icon">🏭</div>
+        <div class="inv-card-name">Magazzino</div>
+        <div class="inv-card-count">0 attrezzi</div>
+      </div>
+      <div class="inv-card inv-card-add" id="add-inv-btn" onclick="addInventory()">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        <span>Nuovo inventario</span>
+      </div>
+    </div>
+
+    <div class="section-label">Azioni rapide</div>
+    <div class="action-list">
+      <div class="action-item" onclick="openChecklist()">
+        <div class="action-icon green">✅</div>
+        <div class="action-info">
+          <div class="action-title">Avvia checklist</div>
+          <div class="action-sub">Verifica presenza attrezzi</div>
+        </div>
+        <div class="action-arrow">›</div>
+      </div>
+      <div class="action-item" onclick="openHistory()">
+        <div class="action-icon blue">📋</div>
+        <div class="action-info">
+          <div class="action-title">Storico checklist</div>
+          <div class="action-sub" id="hist-last">Nessun checklist ancora</div>
+        </div>
+        <div class="action-arrow">›</div>
+      </div>
+      <div class="action-item" id="log-action" onclick="openLog()" style="display:none;">
+        <div class="action-icon" style="background:#f0fdf4;">📊</div>
+        <div class="action-info">
+          <div class="action-title">Log attività</div>
+          <div class="action-sub">Registro modifiche</div>
+        </div>
+        <div class="action-arrow">›</div>
+      </div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-btn active" onclick="showHomeTab()">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Home
+    </button>
+    <button class="nav-btn" onclick="openInventory('Furgone 1','🚐',65)">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+      Inventario
+    </button>
+    <button class="nav-btn" onclick="openChecklist()">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+      Checklist
+    </button>
+  </div>
+</div>
+
+<!-- INVENTORY -->
+<div class="screen" id="screen-inv">
+  <div class="topbar">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goHome()">‹</button>
+      <div style="flex:1;"><h1 id="inv-title">Furgone 1</h1></div>
+      <button class="topbar-action" id="inv-add-btn" onclick="openAddItem()">+ Aggiungi</button>
+    </div>
+    <div class="search-wrap" style="padding:12px 0 0;">
+      <div class="search-box">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="text" id="search-input" placeholder="Cerca attrezzo..." oninput="filterItems()"/>
+      </div>
+    </div>
+  </div>
+  <div class="filter-row" id="filter-row"></div>
+  <div class="item-list" id="item-list"></div>
+  <div class="bottom-nav">
+    <button class="nav-btn" onclick="goHome()">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      Home
+    </button>
+    <button class="nav-btn active">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+      Inventario
+    </button>
+    <button class="nav-btn" onclick="openChecklist()">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+      Checklist
+    </button>
+  </div>
+</div>
+
+<!-- DETAIL -->
+<div class="screen" id="screen-detail">
+  <div class="detail-topbar">
+    <button class="back-btn" onclick="showScreen('screen-inv')">‹</button>
+    <h2 id="detail-title">Attrezzo</h2>
+    <button class="delete-btn" id="detail-del-btn" onclick="deleteItem()">Elimina</button>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+  <div class="detail-footer" id="detail-footer"></div>
+</div>
+
+<!-- CHECKLIST -->
+<div class="screen" id="screen-checklist">
+  <div class="topbar">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goHome()">‹</button>
+      <h1>Checklist verifica</h1>
+    </div>
+  </div>
+  <div class="cl-meta-bar">
+    <div class="cl-meta-text" id="cl-meta">Furgone 1 · 17 apr 2026</div>
+    <div class="cl-progress-track"><div class="cl-progress-fill" id="cl-progress" style="width:0%"></div></div>
+  </div>
+  <div class="cl-list" id="cl-list"></div>
+  <div class="cl-footer">
+    <div class="cl-stats">
+      <div class="cl-stat ok"><div class="cl-stat-num" id="stat-ok">0</div><div class="cl-stat-label">Presenti</div></div>
+      <div class="cl-stat missing"><div class="cl-stat-num" id="stat-miss">0</div><div class="cl-stat-label">Mancanti</div></div>
+      <div class="cl-stat pending"><div class="cl-stat-num" id="stat-pend">0</div><div class="cl-stat-label">Da verificare</div></div>
+    </div>
+    <button class="btn-cl-pause" onclick="pauseChecklist()">Salva e continua dopo</button>
+    <button class="btn-cl-save" onclick="finishChecklist()">Finalizza e salva</button>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="screen" id="screen-history">
+  <div class="topbar">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goHome()">‹</button>
+      <h1>Storico checklist</h1>
+    </div>
+  </div>
+  <div class="screen-body" id="history-body"></div>
+</div>
+
+<!-- LOG -->
+<div class="screen" id="screen-log">
+  <div class="topbar">
+    <div class="topbar-row">
+      <button class="back-btn" onclick="goHome()">‹</button>
+      <h1>Log attività</h1>
+      <button class="topbar-action" id="log-download-btn" onclick="downloadLog()">⬇ Scarica</button>
+    </div>
+  </div>
+  <div class="item-list" id="log-list"></div>
+</div>
+
+<!-- ADD ITEM MODAL -->
+<div class="modal-overlay" id="modal-add">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-add-title">Nuovo attrezzo</div>
+      <button class="modal-close" onclick="closeModal('modal-add')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label class="form-label">Descrizione</label>
+        <input type="text" class="form-input" id="form-name" placeholder="es. Trapano Milwaukee" oninput="showAutocomplete()" autocomplete="off"/>
+        <div class="autocomplete-list" id="autocomplete-list"></div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Marca</label>
+        <input type="text" class="form-input" id="form-brand" placeholder="es. Milwaukee"/>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Quantità</label>
+        <input type="number" class="form-input" id="form-qty" value="1" min="0"/>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Posizione</label>
+        <input type="text" class="form-input" id="form-pos" placeholder="es. Scatola 1 SKIL"/>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Categoria</label>
+        <select class="form-select" id="form-cat"></select>
+      </div>
+      <button class="btn-submit" onclick="submitItem()">Salva attrezzo</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKLIST START MODAL -->
+<div class="modal-overlay" id="modal-cl-start">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Avvia checklist</div>
+      <button class="modal-close" onclick="closeModal('modal-cl-start')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field cl-start-field">
+        <label class="form-label">Inventario</label>
+        <select class="form-select" id="cl-inv-select">
+          <option>Furgone 1</option>
+          <option>Magazzino</option>
+        </select>
+      </div>
+      <div class="form-field cl-start-field">
+        <label class="form-label">Data</label>
+        <input type="date" class="form-input" id="cl-date"/>
+      </div>
+      <div class="form-field cl-start-field">
+        <label class="form-label">Nota (opzionale)</label>
+        <input type="text" class="form-input" id="cl-note" placeholder="es. Verifica prima del cantiere"/>
+      </div>
+      <button class="btn-submit" onclick="startChecklist()">Inizia checklist</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+</div>
+
+<script>
+const SHEET_ID = "1LlWMpMudAAwsynxLS_RlZgJV7o6eOSHh2Pip8r9-_uE";
+const API_KEY = "INSERISCI_QUI_LA_TUA_API_KEY";
+const BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values`;
+
+const USERS = {
+  admin: { pin:"1234", name:"Amministratore", role:"admin", invs:["tutti"] },
+  luca:  { pin:"5678", name:"Luca B.", role:"editor", invs:["Furgone 1"] },
+  anna:  { pin:"9999", name:"Anna C.", role:"viewer", invs:["tutti"] }
+};
+
+const CATEGORIES = [
+  "Altro","Batterie e Caricatori","Custodie","Fissaggio e Saldatura",
+  "Illuminazione","Misura e Livellamento","Pulizia","Seghe e Taglio",
+  "Smerigliatrici (Flex)","Tassellatori e Battenti","Trapani e Avvitatori","Utensili Manuali"
+];
+
+let currentUser = null;
+let currentInv = "Furgone 1";
+let currentFilter = "Tutti";
+let currentItem = null;
+let clState = {};
+let clMeta = {};
+let items = [
+  {id:1,name:"Instrumento cassa nera e blu",brand:"-",qty:1,pos:"-",cat:"Altro"},
+  {id:2,name:"Multi utensile",brand:"Milwaukee",qty:1,pos:"-",cat:"Altro"},
+  {id:3,name:"Quadretto portatile",brand:"-",qty:1,pos:"-",cat:"Altro"},
+  {id:4,name:"Rolo filo",brand:"-",qty:1,pos:"-",cat:"Altro"},
+  {id:5,name:"Suono Makita",brand:"Makita",qty:1,pos:"-",cat:"Altro"},
+  {id:6,name:"Utensile DeWALT",brand:"DeWALT",qty:1,pos:"Scatola DeWALT 2",cat:"Altro"},
+  {id:7,name:"Maleta rossa",brand:"USAG",qty:1,pos:"-",cat:"Custodie"},
+  {id:8,name:"Batterie 12v",brand:"Milwaukee",qty:3,pos:"Scatola 1 SKIL",cat:"Batterie e Caricatori"},
+  {id:9,name:"Batterie 5.5v",brand:"Milwaukee",qty:3,pos:"Scatola 1 SKIL",cat:"Batterie e Caricatori"},
+  {id:10,name:"Batterie 5v",brand:"Milwaukee",qty:2,pos:"Scatola 1 SKIL",cat:"Batterie e Caricatori"},
+  {id:11,name:"Batterie 8v",brand:"Milwaukee",qty:1,pos:"Scatola 1 SKIL",cat:"Batterie e Caricatori"},
+  {id:12,name:"Batterie DeWALT grande",brand:"DeWALT",qty:3,pos:"Scatola DeWALT 3",cat:"Batterie e Caricatori"},
+  {id:13,name:"Batterie DeWALT piccole",brand:"DeWALT",qty:7,pos:"Scatola DeWALT 3",cat:"Batterie e Caricatori"},
+  {id:14,name:"Batterie Mafell grande",brand:"Mafell",qty:3,pos:"-",cat:"Batterie e Caricatori"},
+  {id:15,name:"Batterie Mafell piccolo",brand:"Mafell",qty:1,pos:"-",cat:"Batterie e Caricatori"},
+  {id:16,name:"Batterie Makita",brand:"Makita",qty:10,pos:"-",cat:"Batterie e Caricatori"},
+  {id:17,name:"Caricabatterie Milwaukee",brand:"Milwaukee",qty:4,pos:"Scatola 1 SKIL",cat:"Batterie e Caricatori"},
+  {id:18,name:"Caricabatterie DeWALT",brand:"DeWALT",qty:3,pos:"Scatola DeWALT 3",cat:"Batterie e Caricatori"},
+  {id:19,name:"Caricabatterie Mafell",brand:"Mafell",qty:2,pos:"-",cat:"Batterie e Caricatori"},
+  {id:20,name:"Caricabatterie Makita",brand:"Makita",qty:2,pos:"-",cat:"Batterie e Caricatori"},
+  {id:21,name:"Graffettatrice arancione / gialla",brand:"-",qty:2,pos:"Scatola gialla / nera",cat:"Fissaggio e Saldatura"},
+  {id:22,name:"Graffettatrice aria blu",brand:"-",qty:1,pos:"-",cat:"Fissaggio e Saldatura"},
+  {id:23,name:"Pistola chiodi Anker",brand:"-",qty:5,pos:"-",cat:"Fissaggio e Saldatura"},
+  {id:24,name:"Pistola chiodi gialla",brand:"-",qty:1,pos:"-",cat:"Fissaggio e Saldatura"},
+  {id:25,name:"Pistola chiodi rossa",brand:"-",qty:1,pos:"-",cat:"Fissaggio e Saldatura"},
+  {id:26,name:"Saldatore a gas giallo",brand:"-",qty:1,pos:"-",cat:"Fissaggio e Saldatura"},
+  {id:27,name:"Faro DeWALT",brand:"DeWALT",qty:1,pos:"Scatola DeWALT 2",cat:"Illuminazione"},
+  {id:28,name:"Faro Milwaukee",brand:"Milwaukee",qty:1,pos:"-",cat:"Illuminazione"},
+  {id:29,name:"Laser cassa nera e verde",brand:"-",qty:1,pos:"-",cat:"Misura e Livellamento"},
+  {id:30,name:"Livella a bolla grigia 1.2m",brand:"-",qty:1,pos:"-",cat:"Misura e Livellamento"},
+  {id:31,name:"Livella a bolla grigia 2m",brand:"-",qty:2,pos:"-",cat:"Misura e Livellamento"},
+  {id:32,name:"Livella a bolla rossa 60cm",brand:"-",qty:2,pos:"-",cat:"Misura e Livellamento"},
+  {id:33,name:"Livella a laser DeWALT",brand:"DeWALT",qty:1,pos:"-",cat:"Misura e Livellamento"},
+  {id:34,name:"Metro rolo",brand:"-",qty:1,pos:"-",cat:"Misura e Livellamento"},
+  {id:35,name:"Soffiatore",brand:"Milwaukee",qty:2,pos:"-",cat:"Pulizia"},
+  {id:36,name:"Gattuccio Milwaukee",brand:"Milwaukee",qty:1,pos:"-",cat:"Seghe e Taglio"},
+  {id:37,name:"Gattuccio DeWALT",brand:"DeWALT",qty:1,pos:"-",cat:"Seghe e Taglio"},
+  {id:38,name:"Motosega Makita",brand:"Makita",qty:1,pos:"-",cat:"Seghe e Taglio"},
+  {id:39,name:"Sega a mano",brand:"-",qty:3,pos:"-",cat:"Seghe e Taglio"},
+  {id:40,name:"Sega circolare Milwaukee",brand:"Milwaukee",qty:2,pos:"-",cat:"Seghe e Taglio"},
+  {id:41,name:"Sega circolare DeWALT",brand:"DeWALT",qty:1,pos:"Scatola DeWALT 1",cat:"Seghe e Taglio"},
+  {id:42,name:"Sega circolare Mafell",brand:"Mafell",qty:1,pos:"-",cat:"Seghe e Taglio"},
+  {id:43,name:"Seghetto alternativo",brand:"Milwaukee",qty:1,pos:"-",cat:"Seghe e Taglio"},
+  {id:44,name:"Flex batteria Milwaukee",brand:"Milwaukee",qty:2,pos:"-",cat:"Smerigliatrici (Flex)"},
+  {id:45,name:"Flex corrente Milwaukee",brand:"Milwaukee",qty:1,pos:"-",cat:"Smerigliatrici (Flex)"},
+  {id:46,name:"Flex batteria DeWALT",brand:"DeWALT",qty:1,pos:"Scatola DeWALT 2",cat:"Smerigliatrici (Flex)"},
+  {id:47,name:"Battente Milwaukee",brand:"Milwaukee",qty:3,pos:"Scatola 1 SKIL",cat:"Tassellatori e Battenti"},
+  {id:48,name:"Battente DeWALT",brand:"DeWALT",qty:1,pos:"Scatola DeWALT 2",cat:"Tassellatori e Battenti"},
+  {id:49,name:"Tassellatore senza filo Milwaukee",brand:"Milwaukee",qty:2,pos:"-",cat:"Tassellatori e Battenti"},
+  {id:50,name:"Tassellatore senza filo DeWALT",brand:"DeWALT",qty:1,pos:"Scatola DeWALT 1",cat:"Tassellatori e Battenti"},
+  {id:51,name:"Tassellatore com filo",brand:"DUSS",qty:1,pos:"-",cat:"Tassellatori e Battenti"},
+  {id:52,name:"Avvitatore / Trapano Milwaukee",brand:"Milwaukee",qty:4,pos:"Scatola 1 SKIL",cat:"Trapani e Avvitatori"},
+  {id:53,name:"Avvitatore / Trapano DeWALT",brand:"DeWALT",qty:1,pos:"Scatola DeWALT 2",cat:"Trapani e Avvitatori"},
+  {id:54,name:"Avvitatore / Trapano Mafell",brand:"Mafell",qty:1,pos:"-",cat:"Trapani e Avvitatori"},
+  {id:55,name:"Avvitatore / Trapano Makita",brand:"Makita",qty:1,pos:"-",cat:"Trapani e Avvitatori"},
+  {id:56,name:"Batti spargo / batti linea",brand:"-",qty:1,pos:"Borsa verde / nera Makita",cat:"Utensili Manuali"},
+  {id:57,name:"Cazzuola",brand:"-",qty:1,pos:"Borsa verde / nera Makita",cat:"Utensili Manuali"},
+  {id:58,name:"Morsetto grande",brand:"-",qty:2,pos:"-",cat:"Utensili Manuali"},
+  {id:59,name:"Morsetto medio",brand:"-",qty:2,pos:"-",cat:"Utensili Manuali"},
+  {id:60,name:"Morsetto piccolo",brand:"-",qty:2,pos:"-",cat:"Utensili Manuali"},
+  {id:61,name:"Pialla",brand:"Makita",qty:1,pos:"-",cat:"Utensili Manuali"},
+  {id:62,name:"Scalpello",brand:"-",qty:1,pos:"Scatola gialla / nera",cat:"Utensili Manuali"},
+  {id:63,name:"Set di chiave a bussola",brand:"-",qty:1,pos:"Borsa verde / nera Makita",cat:"Utensili Manuali"},
+  {id:64,name:"Tenaglia",brand:"-",qty:2,pos:"Borsa verde / nera Makita",cat:"Utensili Manuali"},
+  {id:65,name:"Tira trave",brand:"-",qty:2,pos:"-",cat:"Utensili Manuali"},
+];
+let logs = [];
+let checklists = [];
+let nextId = 66;
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function doLogin() {
+  const u = document.getElementById('login-user').value.toLowerCase().trim();
+  const p = document.getElementById('login-pin').value.trim();
+  const err = document.getElementById('login-error');
+  if (USERS[u] && USERS[u].pin === p) {
+    currentUser = { ...USERS[u], username: u };
+    err.style.display = 'none';
+    setupHome();
+    showScreen('screen-home');
+  } else {
+    err.style.display = 'block';
+  }
+}
+
+function doLogout() {
+  currentUser = null;
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pin').value = '';
+  showScreen('screen-login');
+}
+
+function setupHome() {
+  const u = currentUser;
+  const initials = u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('home-avatar').textContent = initials;
+  document.getElementById('home-name').textContent = u.name;
+  const roleMap = { admin:'Amministratore', editor:'Editor', viewer:'Visualizzatore' };
+  document.getElementById('home-role').textContent = roleMap[u.role];
+  const badge = document.getElementById('home-badge');
+  badge.textContent = roleMap[u.role];
+  badge.className = 'role-badge ' + u.role;
+  document.getElementById('add-inv-btn').className = 'inv-card inv-card-add' + (u.role !== 'admin' ? ' locked' : '');
+  document.getElementById('log-action').style.display = (u.role !== 'viewer') ? 'flex' : 'none';
+}
+
+function addInventory() {
+  if (currentUser.role !== 'admin') { showToast('Solo gli Admin possono creare inventari'); return; }
+  const name = prompt('Nome del nuovo inventario:');
+  if (name && name.trim()) showToast('Inventario "' + name.trim() + '" creato!');
+}
+
+function canEdit() {
+  if (!currentUser) return false;
+  if (currentUser.role === 'viewer') return false;
+  if (currentUser.role === 'admin') return true;
+  return currentUser.invs.includes('tutti') || currentUser.invs.includes(currentInv);
+}
+
+function openInventory(name, icon, count) {
+  currentInv = name;
+  currentFilter = 'Tutti';
+  document.getElementById('inv-title').textContent = name;
+  document.getElementById('inv-add-btn').style.display = canEdit() ? 'block' : 'none';
+  document.getElementById('search-input').value = '';
+  renderFilters();
+  renderItems('');
+  showScreen('screen-inv');
+}
+
+function getCategories() {
+  const cats = [...new Set(items.map(i => i.cat))].sort();
+  return ['Tutti', ...cats];
+}
+
+function renderFilters() {
+  const cats = getCategories();
+  document.getElementById('filter-row').innerHTML = cats.map(c =>
+    `<div class="filter-chip ${c===currentFilter?'active':''}" onclick="setFilter('${c}')">${c}</div>`
+  ).join('');
+}
+
+function setFilter(cat) {
+  currentFilter = cat;
+  renderFilters();
+  filterItems();
+}
+
+function filterItems() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  renderItems(q);
+}
+
+function renderItems(q) {
+  const filtered = items.filter(i => {
+    const matchCat = currentFilter === 'Tutti' || i.cat === currentFilter;
+    const matchQ = !q || i.name.toLowerCase().includes(q) || i.brand.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+  if (!filtered.length) {
+    document.getElementById('item-list').innerHTML = `<div class="empty-state"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg><p>Nessun risultato</p></div>`;
+    return;
+  }
+  document.getElementById('item-list').innerHTML = filtered.map((item, idx) =>
+    `<div class="item-row" onclick="openItem(${item.id})">
+      <span class="item-num">${idx+1}</span>
+      <div class="item-body">
+        <div class="item-name">${item.name}</div>
+        <div class="item-meta">${item.brand !== '-' ? item.brand : ''}${item.pos !== '-' ? ' · ' + item.pos : ''}</div>
+      </div>
+      <div class="item-qty">${item.qty}</div>
+      <div class="item-arrow">›</div>
+    </div>`
+  ).join('');
+}
+
+function openItem(id) {
+  currentItem = { ...items.find(i => i.id === id) };
+  const edit = canEdit();
+  document.getElementById('detail-title').textContent = currentItem.name;
+  document.getElementById('detail-del-btn').style.display = edit ? 'block' : 'none';
+  document.getElementById('detail-body').innerHTML = `
+    <div class="field-card">
+      <div class="field-row"><span class="field-row-label">Descrizione</span><span class="field-row-value">${currentItem.name}</span></div>
+      <div class="field-row"><span class="field-row-label">Marca</span><span class="field-row-value">${currentItem.brand}</span></div>
+      <div class="field-row"><span class="field-row-label">Categoria</span><span class="field-row-value">${currentItem.cat}</span></div>
+      <div class="field-row"><span class="field-row-label">Posizione</span><span class="field-row-value">${currentItem.pos}</span></div>
+    </div>
+    <div class="qty-card">
+      <div><div class="qty-label">Quantità</div></div>
+      <div class="qty-controls">
+        ${edit ? `<button class="qty-btn" onclick="changeQty(-1)">−</button>` : ''}
+        <div class="qty-val" id="qty-display">${currentItem.qty}</div>
+        ${edit ? `<button class="qty-btn" onclick="changeQty(1)">+</button>` : ''}
+      </div>
+    </div>
+    <div class="sync-row"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Sincronizzato con Google Sheets</span></div>
+  `;
+  const footer = document.getElementById('detail-footer');
+  if (edit) {
+    footer.innerHTML = `
+      <button class="btn-save" id="save-btn" onclick="saveItem()">Salva modifiche</button>
+      <button class="btn-back-list" onclick="showScreen('screen-inv')">← Torna alla lista</button>
+    `;
+  } else {
+    footer.innerHTML = `<button class="btn-back-list" onclick="showScreen('screen-inv')">← Torna alla lista</button>`;
+  }
+  showScreen('screen-detail');
+}
+
+function changeQty(d) {
+  currentItem.qty = Math.max(0, currentItem.qty + d);
+  document.getElementById('qty-display').textContent = currentItem.qty;
+}
+
+function saveItem() {
+  const btn = document.getElementById('save-btn');
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  btn.textContent = 'Salvataggio...'; btn.classList.add('saving'); btn.disabled = true;
+  dot.style.background = '#d97706'; lbl.textContent = 'Sincronizzazione...';
+  setTimeout(() => {
+    const orig = items.find(i => i.id === currentItem.id);
+    const oldQty = orig.qty;
+    orig.qty = currentItem.qty;
+    addLog('edit', currentItem.name, `Qtà: ${oldQty} → ${currentItem.qty}`);
+    btn.textContent = '✓ Salvato!'; btn.classList.remove('saving'); btn.classList.add('saved');
+    dot.style.background = '#16a34a'; lbl.textContent = 'Sincronizzato con Google Sheets';
+    setTimeout(() => { showScreen('screen-inv'); renderItems(document.getElementById('search-input').value.toLowerCase()); }, 800);
+  }, 700);
+}
+
+function deleteItem() {
+  if (!confirm(`Eliminare "${currentItem.name}" dall'inventario?`)) return;
+  const idx = items.findIndex(i => i.id === currentItem.id);
+  if (idx > -1) { addLog('del', currentItem.name, 'Eliminato'); items.splice(idx, 1); }
+  showToast('Attrezzo eliminato');
+  showScreen('screen-inv');
+  renderItems('');
+}
+
+function openAddItem() {
+  document.getElementById('form-name').value = '';
+  document.getElementById('form-brand').value = '';
+  document.getElementById('form-qty').value = '1';
+  document.getElementById('form-pos').value = '';
+  document.getElementById('modal-add-title').textContent = 'Nuovo attrezzo';
+  const sel = document.getElementById('form-cat');
+  sel.innerHTML = [...CATEGORIES, '+ Nuova categoria'].map(c => `<option>${c}</option>`).join('');
+  document.getElementById('autocomplete-list').classList.remove('open');
+  openModal('modal-add');
+}
+
+function showAutocomplete() {
+  const q = document.getElementById('form-name').value.toLowerCase();
+  const list = document.getElementById('autocomplete-list');
+  if (!q || q.length < 2) { list.classList.remove('open'); return; }
+  const matches = items.filter(i => i.name.toLowerCase().includes(q)).slice(0, 5);
+  if (!matches.length) { list.classList.remove('open'); return; }
+  list.innerHTML = matches.map(i =>
+    `<div class="autocomplete-item" onclick="selectAutocomplete('${i.name.replace(/'/g,"\\'")}','${i.brand.replace(/'/g,"\\'")}','${i.cat}')">${i.name}</div>`
+  ).join('');
+  list.classList.add('open');
+}
+
+function selectAutocomplete(name, brand, cat) {
+  document.getElementById('form-name').value = name;
+  document.getElementById('form-brand').value = brand;
+  document.getElementById('form-cat').value = cat;
+  document.getElementById('autocomplete-list').classList.remove('open');
+}
+
+function submitItem() {
+  const name = document.getElementById('form-name').value.trim();
+  const brand = document.getElementById('form-brand').value.trim() || '-';
+  const qty = parseInt(document.getElementById('form-qty').value) || 1;
+  const pos = document.getElementById('form-pos').value.trim() || '-';
+  let cat = document.getElementById('form-cat').value;
+  if (!name) { alert('Inserisci la descrizione'); return; }
+  if (cat === '+ Nuova categoria') {
+    cat = prompt('Nome della nuova categoria:');
+    if (!cat || !cat.trim()) return;
+    cat = cat.trim();
+    if (!CATEGORIES.includes(cat)) CATEGORIES.push(cat);
+  }
+  const newItem = { id: nextId++, name, brand, qty, pos, cat };
+  items.push(newItem);
+  addLog('add', name, `Qtà: ${qty}, Categoria: ${cat}`);
+  closeModal('modal-add');
+  showToast('Attrezzo aggiunto!');
+  renderFilters();
+  renderItems('');
+}
+
+function addLog(type, item, detail) {
+  const now = new Date();
+  logs.unshift({ type, item, detail, user: currentUser.name, inv: currentInv, date: now.toLocaleDateString('it-IT'), time: now.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'}) });
+}
+
+function openLog() {
+  const list = document.getElementById('log-list');
+  const canDl = currentUser.role === 'admin';
+  document.getElementById('log-download-btn').style.display = canDl ? 'block' : 'none';
+  if (!logs.length) {
+    list.innerHTML = `<div class="empty-state"><p>Nessuna attività registrata</p></div>`;
+  } else {
+    const icons = { add:'➕', edit:'✏️', del:'🗑️', cl:'✅' };
+    const cls = { add:'add', edit:'edit', del:'del', cl:'cl' };
+    list.innerHTML = logs.map(l =>
+      `<div class="log-item">
+        <div class="log-icon ${cls[l.type]}">${icons[l.type]}</div>
+        <div class="log-body">
+          <div class="log-action">${l.user} · ${l.item}</div>
+          <div class="log-detail">${l.detail} · ${l.inv}</div>
+        </div>
+        <div class="log-time">${l.date}<br>${l.time}</div>
+      </div>`
+    ).join('');
+  }
+  showScreen('screen-log');
+}
+
+function downloadLog() {
+  let csv = 'Data,Ora,Utente,Azione,Inventario,Attrezzo,Dettaglio\n';
+  logs.forEach(l => { csv += `${l.date},${l.time},${l.user},${l.type},${l.inv},"${l.item}","${l.detail}"\n`; });
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,\uFEFF' + encodeURIComponent(csv);
+  a.download = `log_inventario_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  showToast('Log scaricato!');
+}
+
+function openChecklist() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('cl-date').value = today;
+  openModal('modal-cl-start');
+}
+
+function startChecklist() {
+  const inv = document.getElementById('cl-inv-select').value;
+  const date = document.getElementById('cl-date').value;
+  const note = document.getElementById('cl-note').value.trim();
+  closeModal('modal-cl-start');
+  clMeta = { inv, date: new Date(date).toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'}), note, user: currentUser.username, startedAt: Date.now() };
+  clState = {};
+  items.forEach(i => { clState[i.id] = { status:'pending', comment:'' }; });
+  document.getElementById('cl-meta').textContent = `${inv} · ${clMeta.date}${note ? ' · ' + note : ''}`;
+  renderChecklist();
+  showScreen('screen-checklist');
+}
+
+function renderChecklist() {
+  document.getElementById('cl-list').innerHTML = items.map(item => {
+    const s = clState[item.id];
+    const checkHtml = s.status === 'ok'
+      ? `<div class="cl-check ok"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg></div>`
+      : s.status === 'missing'
+      ? `<div class="cl-check missing"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></div>`
+      : `<div class="cl-check"></div>`;
+    return `<div class="cl-item">
+      <div class="cl-item-row" onclick="toggleCl(${item.id})">
+        ${checkHtml}
+        <div class="cl-item-name">${item.name}</div>
+        <div class="cl-item-qty">×${item.qty}</div>
+      </div>
+      ${s.status === 'missing' ? `<div class="cl-comment-wrap">
+        <div class="cl-comment-label">Motivo obbligatorio</div>
+        <textarea placeholder="es. rimasto al cantiere Via Roma..." oninput="setComment(${item.id},this.value)">${s.comment}</textarea>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+  updateStats();
+}
+
+function toggleCl(id) {
+  const s = clState[id];
+  s.status = s.status==='pending' ? 'ok' : s.status==='ok' ? 'missing' : 'pending';
+  renderChecklist();
+}
+
+function setComment(id, val) { clState[id].comment = val; }
+
+function updateStats() {
+  const vals = Object.values(clState);
+  const ok = vals.filter(v=>v.status==='ok').length;
+  const miss = vals.filter(v=>v.status==='missing').length;
+  const pend = vals.filter(v=>v.status==='pending').length;
+  document.getElementById('stat-ok').textContent = ok;
+  document.getElementById('stat-miss').textContent = miss;
+  document.getElementById('stat-pend').textContent = pend;
+  document.getElementById('cl-progress').style.width = Math.round((ok+miss)/items.length*100)+'%';
+}
+
+function pauseChecklist() {
+  checklists.unshift({ ...clMeta, state: {...clState}, status:'in_corso', ok:parseInt(document.getElementById('stat-ok').textContent), miss:parseInt(document.getElementById('stat-miss').textContent) });
+  addLog('cl', clMeta.inv, 'Checklist salvata (in corso)');
+  showToast('Checklist salvata — puoi continuare dopo');
+  goHome();
+}
+
+function finishChecklist() {
+  const missing = Object.entries(clState).filter(([id,s])=>s.status==='missing'&&!s.comment.trim());
+  if (missing.length) { showToast('Aggiungi il motivo per tutti gli attrezzi mancanti'); return; }
+  const pend = Object.values(clState).filter(v=>v.status==='pending').length;
+  if (pend && !confirm(`Ci sono ancora ${pend} attrezzi non verificati. Finalizzare comunque?`)) return;
+  checklists.unshift({ ...clMeta, state:{...clState}, status:'completato', ok:parseInt(document.getElementById('stat-ok').textContent), miss:parseInt(document.getElementById('stat-miss').textContent) });
+  addLog('cl', clMeta.inv, 'Checklist finalizzata');
+  document.getElementById('hist-last').textContent = 'Ultimo: ' + clMeta.date;
+  showToast('Checklist salvata e sincronizzata!');
+  goHome();
+}
+
+function openHistory() {
+  const body = document.getElementById('history-body');
+  const visible = checklists.filter(c => currentUser.role === 'admin' || c.user === currentUser.username);
+  if (!visible.length) {
+    body.innerHTML = `<div class="empty-state"><p>Nessun checklist ancora</p></div>`;
+  } else {
+    body.innerHTML = visible.map(c =>
+      `<div class="hist-item">
+        <div class="hist-header">
+          <div><div class="hist-date">${c.date}</div><div class="hist-inv">${c.inv}</div></div>
+          <span class="hist-badge ${c.status==='completato'?'done':'progress'}">${c.status==='completato'?'Completato':'In corso'}</span>
+        </div>
+        <div class="hist-stats">
+          <div class="hist-stat">Presenti: <strong>${c.ok}</strong></div>
+          <div class="hist-stat">Mancanti: <strong>${c.miss}</strong></div>
+          ${c.note ? `<div class="hist-stat">Nota: <strong>${c.note}</strong></div>` : ''}
+        </div>
+      </div>`
+    ).join('');
+  }
+  showScreen('screen-history');
+}
+
+function goHome() { showScreen('screen-home'); }
+function showHomeTab() { showScreen('screen-home'); }
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>
