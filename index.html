@@ -264,7 +264,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
 <body>
 <div id="app">
 
-<!-- LOGIN -->
+<!-- NOME -->
 <div class="screen active" id="screen-login">
   <div class="login-inner">
     <div class="login-logo">
@@ -272,11 +272,9 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     </div>
     <div class="login-title">XS Carpentieri</div>
     <div class="login-sub">Gestione Inventario</div>
-    <div class="login-error" id="login-error">Utente o PIN non validi</div>
-    <div class="field"><label>Utente</label><input type="text" id="login-user" placeholder="es. marco" autocomplete="off"/></div>
-    <div class="field"><label>PIN</label><input type="password" id="login-pin" placeholder="••••" maxlength="8"/></div>
-    <button class="btn-login" onclick="doLogin()">Accedi</button>
-    <div class="login-demo">Demo: admin/1234 · luca/5678 · anna/9999</div>
+    <div class="field"><label>Il tuo nome</label><input type="text" id="login-user" placeholder="es. Marco" autocomplete="off"/></div>
+    <button class="btn-login" onclick="doLogin()">Continua</button>
+    <div class="login-demo">Il tuo nome verrà mostrato nel log attività</div>
   </div>
 </div>
 
@@ -286,12 +284,11 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
     <div class="user-card">
       <div class="user-avatar" id="home-avatar">A</div>
       <div class="user-info">
-        <div class="user-name" id="home-name">Admin</div>
-        <div class="user-role" id="home-role">Amministratore</div>
+        <div class="user-name" id="home-name">Marco</div>
+        <div class="user-role">Inventario XS Carpentieri</div>
       </div>
-      <span class="role-badge admin" id="home-badge">Admin</span>
-      <button class="logout-btn" onclick="doLogout()" style="margin-left:8px;">
-        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+      <button class="logout-btn" onclick="changeUser()" title="Cambia nome">
+        <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
       </button>
     </div>
 
@@ -331,7 +328,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--t
         </div>
         <div class="action-arrow">›</div>
       </div>
-      <div class="action-item" id="log-action" onclick="openLog()" style="display:none;">
+      <div class="action-item" id="log-action" onclick="openLog()">
         <div class="action-icon" style="background:#f0fdf4;">📊</div>
         <div class="action-info">
           <div class="action-title">Log attività</div>
@@ -519,24 +516,18 @@ const SHEET_ID = "1LlWMpMudAAwsynxLS_RlZgJV7o6eOSHh2Pip8r9-_uE";
 const API_KEY = "INSERISCI_QUI_LA_TUA_API_KEY";
 const BASE_URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values`;
 
-const USERS = {
-  admin: { pin:"1234", name:"Amministratore", role:"admin", invs:["tutti"] },
-  luca:  { pin:"5678", name:"Luca B.", role:"editor", invs:["Furgone 1"] },
-  anna:  { pin:"9999", name:"Anna C.", role:"viewer", invs:["tutti"] }
-};
-
-const CATEGORIES = [
-  "Altro","Batterie e Caricatori","Custodie","Fissaggio e Saldatura",
-  "Illuminazione","Misura e Livellamento","Pulizia","Seghe e Taglio",
-  "Smerigliatrici (Flex)","Tassellatori e Battenti","Trapani e Avvitatori","Utensili Manuali"
-];
-
 let currentUser = null;
 let currentInv = "Furgone 1";
 let currentFilter = "Tutti";
 let currentItem = null;
 let clState = {};
 let clMeta = {};
+
+const CATEGORIES = [
+  "Altro","Batterie e Caricatori","Custodie","Fissaggio e Saldatura",
+  "Illuminazione","Misura e Livellamento","Pulizia","Seghe e Taglio",
+  "Smerigliatrici (Flex)","Tassellatori e Battenti","Trapani e Avvitatori","Utensili Manuali"
+];
 
 const inventories = {
   "Furgone 1": [
@@ -630,24 +621,21 @@ function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 function doLogin() {
-  const u = document.getElementById('login-user').value.toLowerCase().trim();
-  const p = document.getElementById('login-pin').value.trim();
-  const err = document.getElementById('login-error');
-  if (USERS[u] && USERS[u].pin === p) {
-    currentUser = { ...USERS[u], username: u };
-    err.style.display = 'none';
-    setupHome();
-    showScreen('screen-home');
-  } else {
-    err.style.display = 'block';
-  }
+  const name = document.getElementById('login-user').value.trim();
+  if (!name) { showToast('Inserisci il tuo nome'); return; }
+  currentUser = { name };
+  localStorage.setItem('inventario_xs_user', name);
+  setupHome();
+  showScreen('screen-home');
 }
 
-function doLogout() {
-  currentUser = null;
-  document.getElementById('login-user').value = '';
-  document.getElementById('login-pin').value = '';
-  showScreen('screen-login');
+function changeUser() {
+  const newName = prompt('Il tuo nome:', currentUser ? currentUser.name : '');
+  if (newName && newName.trim()) {
+    currentUser = { name: newName.trim() };
+    localStorage.setItem('inventario_xs_user', newName.trim());
+    setupHome();
+  }
 }
 
 function setupHome() {
@@ -655,27 +643,27 @@ function setupHome() {
   const initials = u.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('home-avatar').textContent = initials;
   document.getElementById('home-name').textContent = u.name;
-  const roleMap = { admin:'Amministratore', editor:'Editor', viewer:'Visualizzatore' };
-  document.getElementById('home-role').textContent = roleMap[u.role];
-  const badge = document.getElementById('home-badge');
-  badge.textContent = roleMap[u.role];
-  badge.className = 'role-badge ' + u.role;
-  document.getElementById('add-inv-btn').className = 'inv-card inv-card-add' + (u.role !== 'admin' ? ' locked' : '');
-  document.getElementById('log-action').style.display = (u.role !== 'viewer') ? 'flex' : 'none';
 }
 
 function addInventory() {
-  if (currentUser.role !== 'admin') { showToast('Solo gli Admin possono creare inventari'); return; }
   const name = prompt('Nome del nuovo inventario:');
-  if (name && name.trim()) showToast('Inventario "' + name.trim() + '" creato!');
+  if (name && name.trim()) {
+    inventories[name.trim()] = [];
+    showToast('Inventario "' + name.trim() + '" creato!');
+    addLog('add', name.trim(), 'Nuovo inventario creato');
+  }
 }
 
-function canEdit() {
-  if (!currentUser) return false;
-  if (currentUser.role === 'viewer') return false;
-  if (currentUser.role === 'admin') return true;
-  return currentUser.invs.includes('tutti') || currentUser.invs.includes(currentInv);
-}
+function canEdit() { return true; }
+
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('inventario_xs_user');
+  if (saved) {
+    currentUser = { name: saved };
+    setupHome();
+    showScreen('screen-home');
+  }
+});
 
 function openInventory(name, icon, count) {
   currentInv = name;
@@ -740,7 +728,26 @@ function openItem(id) {
   const edit = canEdit();
   document.getElementById('detail-title').textContent = currentItem.name;
   document.getElementById('detail-del-btn').style.display = edit ? 'block' : 'none';
-  document.getElementById('detail-body').innerHTML = `
+
+  const catOptions = [...CATEGORIES].map(c => `<option value="${c}" ${c===currentItem.cat?'selected':''}>${c}</option>`).join('');
+
+  document.getElementById('detail-body').innerHTML = edit ? `
+    <div class="field-card">
+      <div class="field-row"><span class="field-row-label">Descrizione</span><input class="form-input" id="edit-name" value="${currentItem.name.replace(/"/g,'&quot;')}" style="border:none;background:none;padding:0;text-align:right;flex:1;"></div>
+      <div class="field-row"><span class="field-row-label">Marca</span><input class="form-input" id="edit-brand" value="${currentItem.brand.replace(/"/g,'&quot;')}" style="border:none;background:none;padding:0;text-align:right;flex:1;"></div>
+      <div class="field-row"><span class="field-row-label">Categoria</span><select class="form-select" id="edit-cat" style="border:none;background:none;padding:0;text-align:right;flex:1;">${catOptions}</select></div>
+      <div class="field-row"><span class="field-row-label">Posizione</span><input class="form-input" id="edit-pos" value="${currentItem.pos.replace(/"/g,'&quot;')}" style="border:none;background:none;padding:0;text-align:right;flex:1;"></div>
+    </div>
+    <div class="qty-card">
+      <div><div class="qty-label">Quantità</div></div>
+      <div class="qty-controls">
+        <button class="qty-btn" onclick="changeQty(-1)">−</button>
+        <div class="qty-val" id="qty-display">${currentItem.qty}</div>
+        <button class="qty-btn" onclick="changeQty(1)">+</button>
+      </div>
+    </div>
+    <div class="sync-row"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Sincronizzato con Google Sheets</span></div>
+  ` : `
     <div class="field-card">
       <div class="field-row"><span class="field-row-label">Descrizione</span><span class="field-row-value">${currentItem.name}</span></div>
       <div class="field-row"><span class="field-row-label">Marca</span><span class="field-row-value">${currentItem.brand}</span></div>
@@ -749,13 +756,9 @@ function openItem(id) {
     </div>
     <div class="qty-card">
       <div><div class="qty-label">Quantità</div></div>
-      <div class="qty-controls">
-        ${edit ? `<button class="qty-btn" onclick="changeQty(-1)">−</button>` : ''}
-        <div class="qty-val" id="qty-display">${currentItem.qty}</div>
-        ${edit ? `<button class="qty-btn" onclick="changeQty(1)">+</button>` : ''}
-      </div>
+      <div class="qty-controls"><div class="qty-val">${currentItem.qty}</div></div>
     </div>
-    <div class="sync-row"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Sincronizzato con Google Sheets</span></div>
+    <div class="sync-row"><div class="sync-dot"></div><span>Sincronizzato con Google Sheets</span></div>
   `;
   const footer = document.getElementById('detail-footer');
   if (edit) {
@@ -780,14 +783,37 @@ function saveItem() {
   const lbl = document.getElementById('sync-label');
   btn.textContent = 'Salvataggio...'; btn.classList.add('saving'); btn.disabled = true;
   dot.style.background = '#d97706'; lbl.textContent = 'Sincronizzazione...';
+
+  const newName = document.getElementById('edit-name').value.trim() || currentItem.name;
+  const newBrand = document.getElementById('edit-brand').value.trim() || '-';
+  const newCat = document.getElementById('edit-cat').value;
+  const newPos = document.getElementById('edit-pos').value.trim() || '-';
+
   setTimeout(() => {
     const orig = items.find(i => i.id === currentItem.id);
-    const oldQty = orig.qty;
+    const changes = [];
+    if (orig.qty !== currentItem.qty) changes.push(`Qtà: ${orig.qty} → ${currentItem.qty}`);
+    if (orig.name !== newName) changes.push(`Nome: ${orig.name} → ${newName}`);
+    if (orig.brand !== newBrand) changes.push(`Marca: ${orig.brand} → ${newBrand}`);
+    if (orig.cat !== newCat) changes.push(`Categoria: ${orig.cat} → ${newCat}`);
+    if (orig.pos !== newPos) changes.push(`Posizione: ${orig.pos} → ${newPos}`);
+
     orig.qty = currentItem.qty;
-    addLog('edit', currentItem.name, `Qtà: ${oldQty} → ${currentItem.qty}`);
+    orig.name = newName;
+    orig.brand = newBrand;
+    orig.cat = newCat;
+    orig.pos = newPos;
+
+    if (changes.length) addLog('edit', newName, changes.join(', '));
+
     btn.textContent = '✓ Salvato!'; btn.classList.remove('saving'); btn.classList.add('saved');
     dot.style.background = '#16a34a'; lbl.textContent = 'Sincronizzato con Google Sheets';
-    setTimeout(() => { showScreen('screen-inv'); renderItems(document.getElementById('search-input').value.toLowerCase()); }, 800);
+    setTimeout(() => {
+      document.getElementById('inv-title').textContent = currentInv;
+      renderFilters();
+      showScreen('screen-inv');
+      renderItems(document.getElementById('search-input').value.toLowerCase());
+    }, 800);
   }, 700);
 }
 
@@ -861,7 +887,7 @@ function addLog(type, item, detail) {
 
 function openLog() {
   const list = document.getElementById('log-list');
-  const canDl = currentUser.role === 'admin';
+  const canDl = true;
   document.getElementById('log-download-btn').style.display = canDl ? 'block' : 'none';
   if (!logs.length) {
     list.innerHTML = `<div class="empty-state"><p>Nessuna attività registrata</p></div>`;
@@ -903,7 +929,7 @@ function startChecklist() {
   const date = document.getElementById('cl-date').value;
   const note = document.getElementById('cl-note').value.trim();
   closeModal('modal-cl-start');
-  clMeta = { inv, date: new Date(date).toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'}), note, user: currentUser.username, startedAt: Date.now() };
+  clMeta = { inv, date: new Date(date).toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'}), note, user: currentUser.name, startedAt: Date.now() };
   clState = {};
   items.forEach(i => { clState[i.id] = { status:'pending', comment:'' }; });
   document.getElementById('cl-meta').textContent = `${inv} · ${clMeta.date}${note ? ' · ' + note : ''}`;
@@ -974,14 +1000,14 @@ function finishChecklist() {
 
 function openHistory() {
   const body = document.getElementById('history-body');
-  const visible = checklists.filter(c => currentUser.role === 'admin' || c.user === currentUser.username);
+  const visible = checklists;
   if (!visible.length) {
     body.innerHTML = `<div class="empty-state"><p>Nessun checklist ancora</p></div>`;
   } else {
     body.innerHTML = visible.map(c =>
       `<div class="hist-item">
         <div class="hist-header">
-          <div><div class="hist-date">${c.date}</div><div class="hist-inv">${c.inv}</div></div>
+          <div><div class="hist-date">${c.date}</div><div class="hist-inv">${c.inv} · ${c.user}</div></div>
           <span class="hist-badge ${c.status==='completato'?'done':'progress'}">${c.status==='completato'?'Completato':'In corso'}</span>
         </div>
         <div class="hist-stats">

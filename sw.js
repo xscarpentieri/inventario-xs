@@ -1,4 +1,4 @@
-const CACHE = 'inventario-xs-v2';
+const CACHE = 'inventario-xs-v4';
 const ASSETS = ['./', './index.html', './manifest.json'];
 
 self.addEventListener('install', e => {
